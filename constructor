@@ -1,0 +1,65 @@
+#include <iostream>
+#include <string>
+
+// Default Constructor
+class DefaultConstructorExample {
+public:
+    // Default constructor
+    DefaultConstructorExample() {
+        std::cout << "DefaultConstructorExample: Default constructor called.\n";
+    }
+};
+
+// Parameterized Constructor
+class ParameterizedConstructorExample {
+public:
+    // Parameterized constructor
+    ParameterizedConstructorExample(std::string name, int age) {
+        this->name = name;
+        this->age = age;
+        std::cout << "ParameterizedConstructorExample: Parameterized constructor called.\n";
+    }
+
+    void displayInfo() {
+        std::cout << "Name: " << name << ", Age: " << age << std::endl;
+    }
+
+private:
+    std::string name;
+    int age;
+};
+
+// Copy Constructor
+class CopyConstructorExample {
+public:
+    // Copy constructor
+    CopyConstructorExample(const CopyConstructorExample& other) {
+        this->data = other.data;
+        std::cout << "CopyConstructorExample: Copy constructor called.\n";
+    }
+
+    void displayData() {
+        std::cout << "Data: " << data << std::endl;
+    }
+
+private:
+    int data;
+};
+
+int main() {
+    // Default Constructor Example
+    DefaultConstructorExample obj1; // Calls the default constructor
+
+    // Parameterized Constructor Example
+    ParameterizedConstructorExample obj2("Alice", 30); // Calls the parameterized constructor
+    obj2.displayInfo();
+
+    // Copy Constructor Example
+    CopyConstructorExample original;
+    original.displayData();
+
+    CopyConstructorExample copy = original; // Calls the copy constructor
+    copy.displayData();
+
+    return 0;
+}
