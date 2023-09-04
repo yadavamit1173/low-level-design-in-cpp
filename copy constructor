@@ -1,0 +1,91 @@
+/*
+In this code, we demonstrate two different copy constructor scenarios:
+
+Deep Copy Constructor (DeepCopyExample):
+
+The DeepCopyExample class performs a deep copy when creating a new object from another object.
+It dynamically allocates memory for the data member in both the original and copied objects to ensure they have separate copies of the data.
+When we create copy1, it calls the deep copy constructor, and both objects have their own independent copy of the data.
+Shallow Copy Constructor (ShallowCopyExample):
+
+The ShallowCopyExample class performs a shallow copy (the default copy behavior) when creating a new object from another object.
+It shares the same dynamically allocated memory for the data member between the original and copied objects.
+When we create copy2, it calls the shallow copy constructor, and both objects point to the same data. Changes to one object affect the other.
+Each class also includes a destructor to release the dynamically allocated memory to prevent memory leaks.
+*/
+
+
+
+
+#include <iostream>
+#include <cstring>
+
+// Copy Constructor for Deep Copy
+class DeepCopyExample {
+public:
+    // Constructor to initialize data
+    DeepCopyExample(const char* str) {
+        data = new char[strlen(str) + 1];
+        strcpy(data, str);
+    }
+
+    // Copy constructor for deep copy
+    DeepCopyExample(const DeepCopyExample& other) {
+        data = new char[strlen(other.data) + 1];
+        strcpy(data, other.data);
+    }
+
+    // Display data
+    void displayData() {
+        std::cout << "Data: " << data << std::endl;
+    }
+
+    // Destructor to release dynamically allocated memory
+    ~DeepCopyExample() {
+        delete[] data;
+    }
+
+private:
+    char* data;
+};
+
+// Copy Constructor for Shallow Copy
+class ShallowCopyExample {
+public:
+    // Constructor to initialize data
+    ShallowCopyExample(const char* str) {
+        data = new char[strlen(str) + 1];
+        strcpy(data, str);
+    }
+
+    // Copy constructor for shallow copy (default)
+    // It does not allocate new memory, both objects point to the same data.
+    ShallowCopyExample(const ShallowCopyExample& other) : data(other.data) {}
+
+    // Display data
+    void displayData() {
+        std::cout << "Data: " << data << std::endl;
+    }
+
+    // Destructor to release dynamically allocated memory
+    ~ShallowCopyExample() {
+        delete[] data;
+    }
+
+private:
+    char* data;
+};
+
+int main() {
+    // Deep Copy Constructor Example
+    DeepCopyExample original("Deep Copy Example");
+    DeepCopyExample copy1 = original; // Calls the deep copy constructor
+    copy1.displayData();
+
+    // Shallow Copy Constructor Example
+    ShallowCopyExample original2("Shallow Copy Example");
+    ShallowCopyExample copy2 = original2; // Calls the shallow copy constructor
+    copy2.displayData();
+
+    return 0;
+}
