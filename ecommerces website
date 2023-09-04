@@ -1,0 +1,233 @@
+#include <iostream>
+#include <vector>
+#include <map>
+#include <string>
+#include <algorithm>
+#include <ctime>
+#include <cstdlib>
+
+class Product {
+public:
+    Product(int id, std::string name, double price) : id_(id), name_(name), price_(price) {}
+
+    int getId() const { return id_; }
+    std::string getName() const { return name_; }
+    double getPrice() const { return price_; }
+
+private:
+    int id_;
+    std::string name_;
+    double price_;
+};
+
+class User {
+public:
+    User(std::string username, std::string password) : username_(username), password_(password) {}
+
+    bool authenticate(std::string password) const {
+        return password_ == password;
+    }
+
+    std::string getUsername() const { return username_; }
+
+private:
+    std::string username_;
+    std::string password_;
+};
+
+class ShoppingCart {
+public:
+    void addProduct(const Product& product) {
+        items_.push_back(product);
+    }
+
+    void removeProduct(int productId) {
+        items_.erase(std::remove_if(items_.begin(), items_.end(), [productId](const Product& p) {
+            return p.getId() == productId;
+        }), items_.end());
+    }
+
+    double calculateTotal() const {
+        double total = 0.0;
+        for (const auto& item : items_) {
+            total += item.getPrice();
+        }
+        return total;
+    }
+
+    void displayCart() const {
+        std::cout << "Shopping Cart Contents:\n";
+        double total = 0.0;
+
+        for (const auto& item : items_) {
+            std::cout << "Product: " << item.getName() << " | Price: $" << item.getPrice() << std::endl;
+            total += item.getPrice();
+        }
+
+        std::cout << "Total: $" << total << std::endl;
+    }
+
+private:
+    std::vector<Product> items_;
+};
+
+class Order {
+public:
+    Order(int orderId, const ShoppingCart& cart, const User& user) :
+        orderId_(orderId), cart_(cart), user_(user) {}
+
+    void displayOrderDetails() const {
+        std::cout << "Order ID: " << orderId_ << std::endl;
+        std::cout << "User: " << user_.getUsername() << std::endl;
+        cart_.displayCart();
+    }
+
+private:
+    int orderId_;
+    ShoppingCart cart_;
+    User user_;
+};
+
+class ECommerceSystem {
+public:
+    void addProduct(const std::string& name, double price) {
+        int id = productCounter_++;
+        products_.emplace(id, Product(id, name, price));
+    }
+
+    void createUser(const std::string& username, const std::string& password) {
+        users_.emplace(username, User(username, password));
+    }
+
+    User* authenticateUser(const std::string& username, const std::string& password) {
+        auto it = users_.find(username);
+        if (it != users_.end() && it->second.authenticate(password)) {
+            return &(it->second);
+        }
+        return nullptr;
+    }
+
+    void startShoppingSession(User* user) {
+        if (user) {
+            std::cout << "Welcome, " << user->getUsername() << "!\n";
+            activeUser_ = user;
+        }
+        else {
+            std::cout << "Authentication failed. Exiting.\n";
+        }
+    }
+
+    void showProductCatalog() const {
+        std::cout << "Product Catalog:\n";
+        for (const auto& pair : products_) {
+            const Product& product = pair.second;
+            std::cout << "ID: " << product.getId() << " | Name: " << product.getName() << " | Price: $" << product.getPrice() << std::endl;
+        }
+    }
+
+    void addToCart(int productId) {
+        auto it = products_.find(productId);
+        if (it != products_.end()) {
+            shoppingCart_.addProduct(it->second);
+            std::cout << "Added to cart: " << it->second.getName() << std::endl;
+        }
+        else {
+            std::cout << "Invalid product ID. Please try again.\n";
+        }
+    }
+
+    void removeFromCart(int productId) {
+        shoppingCart_.removeProduct(productId);
+    }
+
+    void checkout() {
+        if (shoppingCart_.calculateTotal() > 0) {
+            static int orderCounter = 1;
+            Order order(orderCounter++, shoppingCart_, *activeUser_);
+            order.displayOrderDetails();
+            shoppingCart_ = ShoppingCart();  // Reset the cart after checkout
+        }
+        else {
+            std::cout << "Cart is empty. Nothing to checkout.\n";
+        }
+    }
+
+private:
+    std::map<int, Product> products_;
+    std::map<std::string, User> users_;
+    ShoppingCart shoppingCart_;
+    User* activeUser_ = nullptr;
+    int productCounter_ = 1;
+};
+
+int main() {
+    ECommerceSystem system;
+
+    // Add sample products
+    system.addProduct("Product 1", 19.99);
+    system.addProduct("Product 2", 29.99);
+    system.addProduct("Product 3", 9.99);
+
+    // Create sample users
+    system.createUser("user1", "password1");
+    system.createUser("user2", "password2");
+
+    // Authentication
+    std::string username;
+    std::string password;
+    std::cout << "Enter your username: ";
+    std::cin >> username;
+    std::cout << "Enter your password: ";
+    std::cin >> password;
+
+    User* loggedInUser = system.authenticateUser(username, password);
+    system.startShoppingSession(loggedInUser);
+
+    while (loggedInUser) {
+        std::cout << "\nMenu:\n";
+        std::cout << "1. Show Product Catalog\n";
+        std::cout << "2. Add to Cart\n";
+        std::cout << "3. Remove from Cart\n";
+        std::cout << "4. Checkout\n";
+        std::cout << "5. Logout\n";
+        std::cout << "6. Exit\n";
+        std::cout << "Enter your choice: ";
+
+        int choice;
+        std::cin >> choice;
+
+        switch (choice) {
+            case 1:
+                system.showProductCatalog();
+                break;
+            case 2: {
+                int productId;
+                std::cout << "Enter the product ID to add to the cart: ";
+                std::cin >> productId;
+                system.addToCart(productId);
+                break;
+            }
+            case 3: {
+                int productId;
+                std::cout << "Enter the product ID to remove from the cart: ";
+                std::cin >> productId;
+                system.removeFromCart(productId);
+                break;
+            }
+            case 4:
+                system.checkout();
+                break;
+            case 5:
+                loggedInUser = nullptr;  // Logout
+                std::cout << "Logged out.\n";
+                break;
+            case 6:
+                std::cout << "Exiting.\n";
+                return 0;
+            default:
+                std::cout << "Invalid choice. Try again.\n";
+        }
+    }
+
+    return 0;
+}
