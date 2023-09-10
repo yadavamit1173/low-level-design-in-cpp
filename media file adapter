@@ -1,0 +1,73 @@
+#include <iostream>
+#include <string>
+
+// MediaPlayer interface
+class MediaPlayer {
+public:
+    virtual void play(const std::string& audioType, const std::string& fileName) = 0;
+};
+
+// AdvancedAudioPlayer class
+class AdvancedAudioPlayer {
+public:
+    void playMP3(const std::string& fileName) {
+        std::cout << "Playing MP3 file: " << fileName << std::endl;
+    }
+
+    void playFLAC(const std::string& fileName) {
+        std::cout << "Playing FLAC file: " << fileName << std::endl;
+    }
+
+    void playAAC(const std::string& fileName) {
+        std::cout << "Playing AAC file: " << fileName << std::endl;
+    }
+};
+
+// MediaAdapter class (Adapter)
+class MediaAdapter : public MediaPlayer {
+private:
+    AdvancedAudioPlayer advancedPlayer;
+
+public:
+    void play(const std::string& audioType, const std::string& fileName) override {
+        if (audioType == "MP3") {
+            advancedPlayer.playMP3(fileName);
+        }
+        else if (audioType == "FLAC") {
+            advancedPlayer.playFLAC(fileName);
+        }
+        else if (audioType == "AAC") {
+            advancedPlayer.playAAC(fileName);
+        }
+        else {
+            std::cout << "Unsupported audio type: " << audioType << std::endl;
+        }
+    }
+};
+
+// AudioPlayer class
+class AudioPlayer {
+public:
+    void playMedia(const std::string& audioType, const std::string& fileName) {
+        // Create a MediaAdapter if the audioType is not supported directly
+        if (audioType == "MP3" || audioType == "FLAC" || audioType == "AAC") {
+            MediaPlayer* mediaAdapter = new MediaAdapter();
+            mediaAdapter->play(audioType, fileName);
+            delete mediaAdapter;
+        }
+        else {
+            std::cout << "Unsupported audio type: " << audioType << std::endl;
+        }
+    }
+};
+
+int main() {
+    AudioPlayer audioPlayer;
+
+    audioPlayer.playMedia("MP3", "song.mp3");
+    audioPlayer.playMedia("FLAC", "music.flac");
+    audioPlayer.playMedia("AAC", "audio.aac");
+    audioPlayer.playMedia("WAV", "sound.wav"); // Unsupported format
+
+    return 0;
+}
